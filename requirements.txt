@@ -7,3 +7,6 @@ fastapi
 uvicorn[standart]
 cloud-sql-python-connector[asyncpg]
 loguru
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
