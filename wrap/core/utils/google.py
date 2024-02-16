@@ -15,7 +15,7 @@ def conn_cloud_sql() -> asyncpg.Connection:
         instance_connection_name,
         "asyncpg",
         user="postgres",
-        password="bOIV-3qp(SI~<g85",
+        password="^/H?;+:$C1K;<5tl",
         db="postgres",
         ip_type=IPTypes.PUBLIC
         # db_user=os.environ["DB_USER"],  # e.g. 'my-db-user'
