@@ -1,0 +1,27 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - '-t'
+      - 'gcr.io/mytherapy-414421/my-therapy-api:$COMMIT_SHA'
+      - .
+    id: Build Container Image
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - 'gcr.io/mytherapy-414421/my-therapy-api$COMMIT_SHA'
+    id: Push Image to Container Registry
+  - name: gcr.io/cloud-builders/gcloud
+    args:
+      - run
+      - deploy
+      - my-therapy
+      - '--image'
+      - 'gcr.io/mytherapy-414421/my-therapy-api$COMMIT_SHA'
+      - '--region'
+      - europe-west4
+      - '--platform'
+      - managed
+    id: Deploy Container on Google Cloud Run
+images:
+  - 'gcr.io/mytherapy-414421/my-therapy-api:$COMMIT_SHA'
