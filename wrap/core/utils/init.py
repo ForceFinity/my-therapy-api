@@ -4,12 +4,11 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
+from tortoise import BaseDBAsyncClient
 from tortoise.contrib.fastapi import register_tortoise
 
 from wrap.core import config, logger
-
-db = config.db
-DB_URL = f"{db.driver}://{db.user}:{db.password}@{db.host}:{db.port}/{db.database}"
+from wrap.core.utils.google import conn_cloud_sql
 
 
 def configure_db(app: FastAPI):
@@ -19,6 +18,10 @@ def configure_db(app: FastAPI):
     :param app: Instance of FastAPI class
     :return:
     """
+    conn = conn_cloud_sql()
+
+    conn.close()
+    print(conn._addr)
     models = [
         f'wrap.applications.{app_dir}.models'
         for app_dir in os.listdir(Path("wrap") / "applications")
@@ -28,8 +31,28 @@ def configure_db(app: FastAPI):
 
     register_tortoise(
         app,
-        db_url=DB_URL,
-        modules={'models': models},
+        config={
+            "connections": {
+                "default": {
+                    "engine": "tortoise.backends.asyncpg",
+                    "credentials": {
+                        "database": conn._params.database,
+                        "host": conn._addr[0],
+                        "password": conn._params.password,
+                        "port": conn._addr[1],
+                        "user": conn._params.user,
+                        "ssl": conn._params.ssl,  # Here we pass in the SSL context
+                        "direct_tls": True
+                    }
+                }
+            },
+            "apps": {
+                "models": {
+                    "models": models,
+                    "default_connection": "default",
+                }
+            },
+        },
         generate_schemas=True,
         add_exception_handlers=True,
     )
