@@ -87,6 +87,27 @@ async def verify_questionnaire_completion(
     return True
 
 
+@router.get("/verifyAllQuestionnaire")
+async def verify_all_questionnaire(
+        current_user: Annotated[User, Depends(get_current_user)]
+):
+    if current_user.email != "hexchap@gmail.com":
+        return HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Admin only"
+        )
+    emails = get_emails()
+
+    for user in await UserCRUD.get_all():
+        if user.email not in emails:
+            continue
+
+        await UserCRUD.update_by({"is_questionnaire_complete": True}, id=user.id)
+
+        if record := await RefereedCRUD.get_by(refereed_id=user.id):
+            await RefereedCRUD.update_by({"is_questionnaire_complete": True}, id=record.id)
+
+
 @router.get("/")
 async def test():
     return crypto.phone_hotp.at(11)
@@ -107,6 +128,4 @@ async def get_refereed(
                 "is_questionnaire_complete": (await refereed).is_questionnaire_complete,
             })
 
-
     return resp
-
