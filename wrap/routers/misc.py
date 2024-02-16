@@ -14,12 +14,13 @@ from googleapiclient.errors import HttpError
 
 from wrap.applications.user import User, get_current_user, RefereedCRUD, UserCRUD
 from wrap.applications.user.schemas import Refereed
+from wrap.core.utils import crypto
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 ANSWERS_SPREADSHEET = "1ycxADvDRgkCHsuu74426eFsi6oEjxiSo6NH3vvF-Lz0"
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-emails_range = "D2:D"
+emails_range = "B2:B"
 credentials_file = "token.json"
 cache_file = "emails.json"
 
@@ -88,22 +89,24 @@ async def verify_questionnaire_completion(
 
 @router.get("/")
 async def test():
-    return await RefereedCRUD.model.filter(user_id=3).all()
+    return crypto.phone_hotp.at(11)
 
 
 @router.get("/getRefereed")
-async def get_refereed(by_user_id: str = ""):
+async def get_refereed(
+        current_user: Annotated[User, Depends(get_current_user)]
+):
     resp = []
 
-    if not by_user_id:
-        return None
+    for refereed in await RefereedCRUD.model.filter(user_id=current_user.id).all():
+        refereed = await refereed.refereed
 
-    for refereed in await RefereedCRUD.model.filter(user_id=str(by_user_id)).all():
-        refereed = refereed.refereed
-        resp.append({
-            "email": (await refereed).email,
-            "is_questionnaire_complete": (await refereed).is_questionnaire_complete,
-        })
+        if refereed.is_confirmed:
+            resp.append({
+                "email": (await refereed).email,
+                "is_questionnaire_complete": (await refereed).is_questionnaire_complete,
+            })
+
 
     return resp
 
