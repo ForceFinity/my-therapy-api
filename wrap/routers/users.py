@@ -15,7 +15,7 @@ router = APIRouter()
 
 
 @router.get("/", response_model=User)
-async def get_by(email: str = ""):
+async def get_by(email: str = "") -> User | list[User] | None:
     not_found = HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
         detail="User not found"
