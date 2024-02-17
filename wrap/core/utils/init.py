@@ -20,8 +20,6 @@ def configure_db(app: FastAPI):
     """
     conn = conn_cloud_sql()
 
-    conn.close()
-    print(conn._addr)
     models = [
         f'wrap.applications.{app_dir}.models'
         for app_dir in os.listdir(Path("wrap") / "applications")
