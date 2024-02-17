@@ -14,7 +14,7 @@ from googleapiclient.errors import HttpError
 
 from wrap.applications.user import User, get_current_user, RefereedCRUD, UserCRUD
 from wrap.applications.user.schemas import Refereed
-from wrap.core.utils import crypto
+from wrap.core.utils import crypto, transporter
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 ANSWERS_SPREADSHEET = "1ycxADvDRgkCHsuu74426eFsi6oEjxiSo6NH3vvF-Lz0"
@@ -66,7 +66,10 @@ def get_emails() -> list | None:
         print(err)
 
 
-@router.get("/verifyQuestionnaireCompletion/")
+@router.get(
+    "/verifyQuestionnaireCompletion/",
+    description="Verify if current user has completed the questionnaire"
+)
 async def verify_questionnaire_completion(
         current_user: Annotated[User, Depends(get_current_user)]
 ) -> bool:
@@ -87,15 +90,14 @@ async def verify_questionnaire_completion(
     return True
 
 
-@router.get("/verifyAllQuestionnaire")
+@router.get(
+    "/verifyAllQuestionnaire",
+    description="Check for all user if they have completed the questionnaire",
+    openapi_extra={"scope": "admin"}
+)
 async def verify_all_questionnaire(
         current_user: Annotated[User, Depends(get_current_user)]
-):
-    if current_user.email != "hexchap@gmail.com":
-        return HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Admin only"
-        )
+) -> None:
     emails = get_emails()
 
     for user in await UserCRUD.get_all():
@@ -108,9 +110,14 @@ async def verify_all_questionnaire(
             await RefereedCRUD.update_by({"is_questionnaire_complete": True}, id=record.id)
 
 
+@router.get("/sendToSUpdated")
+async def send_tos_updated() -> None:
+    await transporter.send_tos_changes()
+
+
 @router.get("/")
 async def test():
-    return crypto.phone_hotp.at(11)
+    return None
 
 
 @router.get("/getRefereed")
