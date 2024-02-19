@@ -13,8 +13,8 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 from wrap.applications.user import User, get_current_user, RefereedCRUD, UserCRUD
-from wrap.applications.user.schemas import Refereed
-from wrap.core.utils import crypto, transporter
+from wrap.applications.user.dependencies import CurrentAdmin, CurrentUser
+from wrap.core.utils import transporter
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 ANSWERS_SPREADSHEET = "1ycxADvDRgkCHsuu74426eFsi6oEjxiSo6NH3vvF-Lz0"
@@ -29,7 +29,6 @@ router = APIRouter()
 
 def get_emails() -> list | None:
     creds = None
-    emails = json.dumps(cache_file)
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
@@ -71,7 +70,7 @@ def get_emails() -> list | None:
     description="Verify if current user has completed the questionnaire"
 )
 async def verify_questionnaire_completion(
-        current_user: Annotated[User, Depends(get_current_user)]
+        current_user: CurrentUser
 ) -> bool:
     if not (emails := get_emails()):
         raise HTTPException(
@@ -92,12 +91,9 @@ async def verify_questionnaire_completion(
 
 @router.get(
     "/verifyAllQuestionnaire",
-    description="Check for all user if they have completed the questionnaire",
-    openapi_extra={"scope": "admin"}
+    description="Check for all user if they have completed the questionnaire"
 )
-async def verify_all_questionnaire(
-        current_user: Annotated[User, Depends(get_current_user)]
-) -> None:
+async def verify_all_questionnaire(_: CurrentAdmin) -> None:
     emails = get_emails()
 
     for user in await UserCRUD.get_all():
@@ -111,7 +107,7 @@ async def verify_all_questionnaire(
 
 
 @router.get("/sendToSUpdated")
-async def send_tos_updated() -> None:
+async def send_tos_updated(_: CurrentAdmin) -> None:
     await transporter.send_tos_changes()
 
 
@@ -122,7 +118,7 @@ async def test():
 
 @router.get("/getRefereed")
 async def get_refereed(
-        current_user: Annotated[User, Depends(get_current_user)]
+        current_user: CurrentUser
 ):
     resp = []
 

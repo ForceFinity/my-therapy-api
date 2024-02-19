@@ -1,6 +1,14 @@
+from enum import IntEnum
+
 from tortoise import fields
 
 from wrap.core.bases import BaseModel
+
+
+class UserType(IntEnum):
+    CLIENT = 1
+    THERAPIST = 2
+    ADMIN = 3
 
 
 class UserORM(BaseModel):
@@ -8,6 +16,7 @@ class UserORM(BaseModel):
     email = fields.CharField(max_length=256, unique=True)
     birth_date = fields.DateField()
     password_hash = fields.CharField(max_length=512)
+    account_type = fields.IntEnumField(UserType, default=UserType.CLIENT)
     is_confirmed = fields.BooleanField(default=False)
     is_active = fields.BooleanField(default=True)
     is_questionnaire_complete = fields.BooleanField(default=False)

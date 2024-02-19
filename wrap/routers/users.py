@@ -1,13 +1,10 @@
 __tags__ = ["users"]
 __prefix__ = "/users"
 
-from typing import Annotated
+from fastapi import APIRouter, HTTPException, status
 
-from fastapi import APIRouter, HTTPException, Depends
-from starlette import status
-
-from wrap.applications.user import UserCRUD, User, get_current_user
-from wrap.applications.user.models import UserORM
+from wrap.applications.user import UserCRUD, User
+from wrap.applications.user.dependencies import CurrentUser
 from wrap.core.utils.crypto import email_hotp
 from wrap.core.utils.transporter import send_confirm_email
 
@@ -30,7 +27,7 @@ async def get_by(email: str = "") -> User | list[User] | None:
 @router.post("/sendConfirmationEmail")
 async def send_confirmation_email(
         email: str,
-        current_user: Annotated[User, Depends(get_current_user)]
+        current_user: CurrentUser
 ):
     if current_user.is_confirmed:
         raise HTTPException(
@@ -50,7 +47,7 @@ async def send_confirmation_email(
 @router.post("/confirm")
 async def confirm_email(
         otp: str,
-        current_user: Annotated[User, Depends(get_current_user)]
+        current_user: CurrentUser
 ) -> User:
     if current_user.is_confirmed:
         raise HTTPException(

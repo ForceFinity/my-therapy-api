@@ -4,13 +4,11 @@ __prefix__ = "/oauth2"
 from datetime import timedelta, datetime
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Depends, status, Header, Form, Query
-
+from fastapi import APIRouter, HTTPException, Depends, status, Form
 from fastapi.security import OAuth2PasswordRequestForm
-from jose import JWTError
 
 from wrap.applications.user import Token, UserCRUD, RefereedCRUD
-from wrap.applications.user.schemas import TokenDecoded, UserPayload, UserResponse, User, Refereed, RefereedPayload
+from wrap.applications.user.schemas import TokenDecoded, UserPayload, UserResponse, User, RefereedPayload
 from wrap.core.utils import crypto
 
 router = APIRouter()
