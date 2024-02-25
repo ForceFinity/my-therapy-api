@@ -41,7 +41,7 @@ async def send_confirmation_email(
             detail="Unknown Email"
         )
 
-    return send_confirm_email(email, current_user.id)
+    return await send_confirm_email(email, current_user.id)
 
 
 @router.post("/confirm")
