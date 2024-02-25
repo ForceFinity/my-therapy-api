@@ -25,10 +25,10 @@ async def send_confirm_email(receiver: str, id_: int):
         f"<body>\n"
         f"    <div style=\"max-width: 600px; margin: 0 auto;\">\n"
         f"        <h2>Потвърждение на имейл адреса</h2>\n"
-        f"        <p>Благодарим ви, че се регистрирахте на mytherapy.bg</p>\n"
+        f"        <p>Благодарим ви, че се регистрирахте на my-therapy.vercel.app</p>\n"
         f"        <p>Вашият код за потвърждение е <h2>{otp}</h2></p>\n"
         f"        <p>Ако не сте направили тази заявка, моля, игнорирайте това съобщение.</p>\n"
-        f"        <p>Благодарим ви, че избрахте mytherapy.bg ♥ </p>\n"
+        f"        <p>Благодарим ви, че избрахте MyTherapy ♥ </p>\n"
         f"    </div>\n"
         f"</body>\n", subtype="html"
     )
