@@ -35,7 +35,7 @@ async def send_confirm_email(receiver: str, id_: int):
 
     context = ssl.create_default_context()
 
-    with aiosmtplib.SMTP(
+    async with aiosmtplib.SMTP(
         hostname="smtp.gmail.com",
         port=465,
         use_tls=True,
