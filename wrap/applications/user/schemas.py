@@ -1,12 +1,10 @@
 import datetime
 from typing import ClassVar
 
-from fastapi import Form
-from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, Field, AliasChoices
 from tortoise.contrib.pydantic import pydantic_model_creator
 
-from wrap.applications.user.models import UserORM, RefereedORM
+from .models import UserORM, RefereedORM, UserType
 
 Refereed = pydantic_model_creator(RefereedORM)
 
@@ -53,6 +51,7 @@ class EmailDecoded(BaseModel):
 class UserBase(BaseModel):
     nickname: str | None = None
     birth_date: datetime.date
+    account_type: UserType
     email: str
 
 
