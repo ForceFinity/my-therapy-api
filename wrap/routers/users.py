@@ -1,10 +1,12 @@
 __tags__ = ["users"]
 __prefix__ = "/users"
 
-from fastapi import APIRouter, HTTPException, status
+from typing import Annotated
+
+from fastapi import APIRouter, HTTPException, status, Form
 
 from wrap.applications.user import UserCRUD, User
-from wrap.applications.user.dependencies import CurrentUser
+from wrap.applications.user.dependencies import CurrentUser, CurrentConfirmed
 from wrap.core.utils.crypto import email_hotp
 from wrap.core.utils.transporter import send_confirm_email
 
@@ -64,3 +66,11 @@ async def confirm_email(
     user = await UserCRUD.update_by({"is_confirmed": True}, id=current_user.id)
 
     return User.from_orm(user)
+
+
+@router.post("/setPfp")
+async def set_pfp(
+        pfp_url: Annotated[str, Form()],
+        current_confirmed: CurrentConfirmed
+):
+    await UserCRUD.set_pfp(current_confirmed.id, pfp_url)

@@ -37,4 +37,15 @@ async def get_current_admin(user: CurrentUser) -> User:
     return user
 
 
+async def get_current_confirmed(user: CurrentUser) -> User:
+    if not user.is_confirmed:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Email not confirmed"
+        )
+
+    return user
+
+
 CurrentAdmin = Annotated[User, Depends(get_current_admin)]
+CurrentConfirmed = Annotated[User, Depends(get_current_confirmed)]

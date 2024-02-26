@@ -28,6 +28,16 @@ class UserORM(BaseModel):
         table = "users"
 
 
+class UserPFPORM(BaseModel):
+    pfp_url = fields.CharField(max_length=512, null=True)
+    user: fields.OneToOneRelation["UserORM"] = fields.OneToOneField(
+        "models.UserORM", "user"
+    )
+
+    class Meta:
+        table = "user_pfp"
+
+
 class RefereedORM(BaseModel):
     is_questionnaire_complete = fields.BooleanField(default=False)
     user: fields.ForeignKeyRelation["UserORM"] = fields.ForeignKeyField(
