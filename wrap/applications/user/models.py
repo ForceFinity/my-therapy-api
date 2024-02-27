@@ -31,7 +31,7 @@ class UserORM(BaseModel):
 class UserPFPORM(BaseModel):
     pfp_url = fields.CharField(max_length=512, null=True)
     user: fields.OneToOneRelation["UserORM"] = fields.OneToOneField(
-        "models.UserORM", "user"
+        "models.UserORM", "pfp_url"
     )
 
     class Meta:

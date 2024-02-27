@@ -1,3 +1,5 @@
+from fastapi import HTTPException, status
+
 from .models import UserORM, RefereedORM, UserPFPORM
 from .schemas import UserPayload, UserSchema, Refereed
 from wrap.core.utils import crypto
@@ -32,10 +34,20 @@ class UserCRUD(BaseCRUD):
 
     @classmethod
     async def set_pfp(cls, user_id: int, pfp_url: str) -> UserPFPORM:
-        return (await UserPFPORM.update_or_create(
-            defaults=dict(user_id=user_id, pfp_url=pfp_url),
-            user_id=user_id
-        ))[0]
+        if user_pfp := await UserPFPORM.get_or_none(user_id=user_id):
+            await user_pfp.update_from_dict({"pfp_url": pfp_url})
+            await user_pfp.save()
+        else:
+            user_pfp = await UserPFPORM.create(user_id=user_id, pfp_url=pfp_url)
+
+        return user_pfp
+
+    @classmethod
+    async def get_pfp(cls, user_id: int) -> str:
+        if not (pfp := await UserPFPORM.get_or_none(user_id=user_id)):
+            return ""
+
+        return pfp.pfp_url
 
 
 class RefereedCRUD(BaseCRUD):

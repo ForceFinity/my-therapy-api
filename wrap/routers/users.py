@@ -4,73 +4,56 @@ __prefix__ = "/users"
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, status, Form
+from starlette.responses import JSONResponse
+from tortoise.expressions import Q
 
 from wrap.applications.user import UserCRUD, User
-from wrap.applications.user.dependencies import CurrentUser, CurrentConfirmed
+from wrap.applications.user.dependencies import CurrentUser, CurrentConfirmed, CurrentAdmin
+from wrap.applications.user.models import UserType
 from wrap.core.utils.crypto import email_hotp
 from wrap.core.utils.transporter import send_confirm_email
 
 router = APIRouter()
 
 
-@router.get("/", response_model=User)
-async def get_by(email: str = "") -> User | list[User] | None:
-    not_found = HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="User not found"
-    )
+@router.get("/")
+async def get_by(
+        id: int = None,
+        email: str = None,
+        is_therapist: bool = None,
+        offset: int = None,
+        limit: int = None
+) -> User | list[User] | None:
+    limit = limit if limit and (limit <= 50) else 50
+    query = UserCRUD.model.all()
+
+    if id:
+        return await query.get_or_none(id=id)
+
+    if offset:
+        query = query.offset(offset)
+
     if email:
-        if not (user := await UserCRUD.get_by(email=email)):
-            raise not_found
+        query = query.filter(email=email)
 
-        return await User.from_tortoise_orm(user)
-
-
-@router.post("/sendConfirmationEmail")
-async def send_confirmation_email(
-        email: str,
-        current_user: CurrentUser
-):
-    if current_user.is_confirmed:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Email Already Confirmed"
+    if is_therapist is not None:
+        query = query.filter(
+            Q(account_type=UserType.THERAPIST)
+            if is_therapist
+            else ~Q(account_type=UserType.THERAPIST)
         )
 
-    if current_user.email != email:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Unknown Email"
-        )
-
-    return await send_confirm_email(email, current_user.id)
+    return await query.order_by("id").limit(limit)
 
 
-@router.post("/confirm")
-async def confirm_email(
-        otp: str,
-        current_user: CurrentUser
-) -> User:
-    if current_user.is_confirmed:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Email Already Confirmed"
-        )
-
-    if not email_hotp.verify(otp, current_user.id):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid code"
-        )
-
-    user = await UserCRUD.update_by({"is_confirmed": True}, id=current_user.id)
-
-    return User.from_orm(user)
-
-
-@router.post("/setPfp")
+@router.post("/pfp")
 async def set_pfp(
         pfp_url: Annotated[str, Form()],
         current_confirmed: CurrentConfirmed
 ):
-    await UserCRUD.set_pfp(current_confirmed.id, pfp_url)
+    return await UserCRUD.set_pfp(current_confirmed.id, pfp_url)
+
+
+@router.get("/pfp")
+async def get_pfp(current_user: CurrentConfirmed):
+    return await UserCRUD.get_pfp(current_user.id)

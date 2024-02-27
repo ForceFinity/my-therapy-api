@@ -51,7 +51,7 @@ class EmailDecoded(BaseModel):
 class UserBase(BaseModel):
     nickname: str | None = None
     birth_date: datetime.date
-    account_type: UserType
+    account_type: UserType = UserType.CLIENT
     email: str
 
 
