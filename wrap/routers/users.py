@@ -3,15 +3,12 @@ __prefix__ = "/users"
 
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, status, Form
-from starlette.responses import JSONResponse
+from fastapi import APIRouter, Form
 from tortoise.expressions import Q
 
 from wrap.applications.user import UserCRUD, User
-from wrap.applications.user.dependencies import CurrentUser, CurrentConfirmed, CurrentAdmin
+from wrap.applications.user.dependencies import CurrentConfirmed
 from wrap.applications.user.models import UserType
-from wrap.core.utils.crypto import email_hotp
-from wrap.core.utils.transporter import send_confirm_email
 
 router = APIRouter()
 
@@ -55,5 +52,5 @@ async def set_pfp(
 
 
 @router.get("/pfp")
-async def get_pfp(current_user: CurrentConfirmed):
-    return await UserCRUD.get_pfp(current_user.id)
+async def get_pfp(current_confirmed: CurrentConfirmed):
+    return await UserCRUD.get_pfp(current_confirmed.id)

@@ -1,7 +1,7 @@
 __tags__ = ["users", "email_confirmation"]
 __prefix__ = "/users"
 
-from fastapi import APIRouter, HTTPException, status, Form
+from fastapi import APIRouter, HTTPException, status
 
 from wrap.applications.user import User, UserCRUD
 from wrap.applications.user.dependencies import CurrentUser

@@ -1,9 +1,7 @@
-from fastapi import HTTPException, status
-
-from .models import UserORM, RefereedORM, UserPFPORM
-from .schemas import UserPayload, UserSchema, Refereed
-from wrap.core.utils import crypto
 from wrap.core.bases import BaseCRUD
+from wrap.core.utils import crypto
+from .models import UserORM, RefereedORM, UserPFPORM
+from .schemas import UserPayload, UserSchema
 
 
 class UserCRUD(BaseCRUD):

@@ -1,7 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException
-from starlette import status
+from fastapi import Depends, HTTPException, status
 
 from .crud import UserCRUD
 from .models import UserType
