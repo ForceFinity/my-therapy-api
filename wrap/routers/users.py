@@ -7,19 +7,21 @@ from fastapi import APIRouter, Form
 from tortoise.expressions import Q
 
 from wrap.applications.user import UserCRUD, User
-from wrap.applications.user.dependencies import CurrentConfirmed
+from wrap.applications.user.crud import TherapistDataCRUD
+from wrap.applications.user.dependencies import CurrentConfirmed, CurrentTherapist
 from wrap.applications.user.models import UserType
+from wrap.applications.user.schemas import EventSchema
 
 router = APIRouter()
 
 
 @router.get("/")
 async def get_by(
-        id: int = None,
-        email: str = None,
-        is_therapist: bool = None,
-        offset: int = None,
-        limit: int = None
+        id: int | None = None,
+        email: str | None = None,
+        is_therapist: bool | None = None,
+        offset: int | None = None,
+        limit: int | None = None
 ) -> User | list[User] | None:
     limit = limit if limit and (limit <= 50) else 50
     query = UserCRUD.model.all()
@@ -54,3 +56,13 @@ async def set_pfp(
 @router.get("/pfp")
 async def get_pfp(current_confirmed: CurrentConfirmed):
     return await UserCRUD.get_pfp(current_confirmed.id)
+
+
+@router.get("/therapistData/events")
+async def get_events(current_therapist: CurrentTherapist):  
+    return await TherapistDataCRUD.get_events(current_therapist.id)
+
+
+@router.post("/therapistData/events")
+async def get_events(current_therapist: CurrentTherapist, event: EventSchema):
+    return await TherapistDataCRUD.add_event(current_therapist.id, event)

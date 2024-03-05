@@ -1,14 +1,14 @@
 from wrap.core.bases import BaseCRUD
 from wrap.core.utils import crypto
-from .models import UserORM, RefereedORM, UserPFPORM
-from .schemas import UserPayload, UserSchema
+from .models import UserORM, RefereedORM, UserPFPORM, TherapistDataORM, TherapistEventORM
+from .schemas import UserPayload, UserSchema, EventSchema
 
 
-class UserCRUD(BaseCRUD):
+class UserCRUD(BaseCRUD[UserORM]):
     model = UserORM
 
     @classmethod
-    async def create_by(cls, payload: UserPayload) -> model:
+    async def create_by(cls, payload: UserPayload):
         password_hash = crypto.get_password_hash(payload.password)
 
         hashed_payload = UserSchema(
@@ -46,6 +46,26 @@ class UserCRUD(BaseCRUD):
             return ""
 
         return pfp.pfp_url
+
+
+class TherapistDataCRUD(BaseCRUD[TherapistDataORM]):
+    model = TherapistDataORM
+
+    @classmethod
+    async def get_events(cls, id_: int) -> list[TherapistEventORM]:
+        if therapist_data := await cls.get_by(therapist_id=id_):
+            return await therapist_data.events
+
+        therapist_data = await cls.model.create(therapist_id=id_)
+
+        return await therapist_data.events
+
+    @classmethod
+    async def add_event(cls, id_: int, event: EventSchema) -> TherapistEventORM:
+        if not (therapist_data := await cls.get_by(therapist_id=id_)):
+            therapist_data = await cls.model.create(therapist_id=id_)
+
+        return await TherapistEventORM.create(**event.model_dump(), therapist_data_id=therapist_data.id)
 
 
 class RefereedCRUD(BaseCRUD):
