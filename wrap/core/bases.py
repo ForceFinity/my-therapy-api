@@ -19,7 +19,7 @@ CRUDModel = TypeVar('CRUDModel')
 
 
 class BaseCRUD(Generic[CRUDModel]):
-    model: CRUDModel
+    model: CRUDModel = CRUDModel
 
     @classmethod
     async def create_by(cls, payload: PydanticModel) -> CRUDModel:

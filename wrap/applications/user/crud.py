@@ -1,7 +1,8 @@
 from wrap.core.bases import BaseCRUD
 from wrap.core.utils import crypto
-from .models import UserORM, RefereedORM, UserPFPORM, TherapistDataORM, TherapistEventORM
-from .schemas import UserPayload, UserSchema, EventSchema
+from .models import UserORM, RefereedORM, UserPFPORM, TherapistDataORM, TherapistEventORM, TherapistNoteORM, \
+    TherapistInfoORM, EventType
+from .schemas import UserPayload, UserSchema, EventPayload
 
 
 class UserCRUD(BaseCRUD[UserORM]):
@@ -52,20 +53,51 @@ class TherapistDataCRUD(BaseCRUD[TherapistDataORM]):
     model = TherapistDataORM
 
     @classmethod
-    async def get_events(cls, id_: int) -> list[TherapistEventORM]:
-        if therapist_data := await cls.get_by(therapist_id=id_):
-            return await therapist_data.events
-
-        therapist_data = await cls.model.create(therapist_id=id_)
-
-        return await therapist_data.events
-
-    @classmethod
-    async def add_event(cls, id_: int, event: EventSchema) -> TherapistEventORM:
+    async def get_therapist_data(cls, id_: int) -> TherapistDataORM:
         if not (therapist_data := await cls.get_by(therapist_id=id_)):
             therapist_data = await cls.model.create(therapist_id=id_)
 
+        return therapist_data
+
+    @classmethod
+    async def get_events(cls, id_: int) -> list[TherapistEventORM]:
+        therapist_data = await cls.get_therapist_data(id_)
+
+        return await therapist_data.events.order_by("event_datetime")
+
+    @classmethod
+    async def add_event(cls, id_: int, event: EventPayload) -> TherapistEventORM:
+        therapist_data = await cls.get_therapist_data(id_)
+
         return await TherapistEventORM.create(**event.model_dump(), therapist_data_id=therapist_data.id)
+
+    @classmethod
+    async def get_sessions(cls, id_: int):
+        therapist_data = await cls.get_therapist_data(id_)
+
+        return await TherapistEventORM.filter(
+            therapist_data_id=therapist_data.id, type=EventType.SESSION
+        ).all()
+
+    @classmethod
+    async def get_note(cls, id_: int, client_id: int) -> TherapistNoteORM | None:
+        therapist_data = await cls.get_therapist_data(id_)
+
+        return await TherapistNoteORM.get_or_none(therapist_data_id=therapist_data.id, client_id=client_id)
+
+    @classmethod
+    async def add_note(cls, id_: int, client_id: int, content: str):
+        therapist_data = await cls.get_therapist_data(id_)
+
+        return await TherapistNoteORM.create(
+            therapist_data_id=therapist_data.id,
+            client_id=client_id,
+            content=content
+        )
+
+
+class TherapistInfoCRUD(BaseCRUD[TherapistInfoORM]):
+    model = TherapistInfoORM
 
 
 class RefereedCRUD(BaseCRUD):

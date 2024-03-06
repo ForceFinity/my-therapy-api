@@ -4,9 +4,23 @@ from typing import ClassVar, TypeAlias
 from pydantic import BaseModel, Field, AliasChoices
 from tortoise.contrib.pydantic import pydantic_model_creator
 
-from .models import UserORM, RefereedORM, UserType, TherapistEventORM, TherapistDataORM
+from .models import UserORM, RefereedORM, UserType, TherapistEventORM, TherapistDataORM, TherapistNoteORM, \
+    TherapistInfoORM
 
 Refereed = pydantic_model_creator(RefereedORM)
+Event = pydantic_model_creator(TherapistEventORM)
+Note = pydantic_model_creator(TherapistNoteORM)
+TherapistInfoPayload = pydantic_model_creator(TherapistInfoORM, include=("about", "education", "price"))
+
+
+class TherapistInfo(pydantic_model_creator(TherapistInfoORM)):
+    therapist_id: int
+    work_hours: list[datetime.datetime]
+
+
+class TherapistInfoFull(TherapistInfo):
+    pfp: str
+    name: str
 
 
 class RefereedPayload(BaseModel):
@@ -18,6 +32,7 @@ class Token(BaseModel):
     access_token: str = Field(
         validation_alias=AliasChoices("accessToken", "access_token")
     )
+    token_type: str
 
 
 class TokenDecoded(BaseModel):
@@ -63,7 +78,11 @@ class UserPayload(UserBase):
     password: str
 
 
-class EventSchema(pydantic_model_creator(TherapistEventORM, exclude=("created_at", "id"))):
+class EventPayload(pydantic_model_creator(TherapistEventORM, name="EventPayload", exclude=("created_at", "id"))):
+    client_id: int
+
+
+class EventResponse(pydantic_model_creator(TherapistEventORM, name="EventResponse")):
     client_id: int
 
 

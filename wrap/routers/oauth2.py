@@ -31,7 +31,7 @@ async def auth_for_token(
         data={"email": user.email}, expires_delta=access_token_expires
     )
 
-    return Token(accessToken=access_token)
+    return Token(accessToken=access_token, token_type="Bearer")
 
 
 @router.get("/verify/", response_model=TokenDecoded)

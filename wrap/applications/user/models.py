@@ -2,6 +2,7 @@ from enum import IntEnum
 from typing import TYPE_CHECKING
 
 from tortoise import fields
+from tortoise.contrib.postgres.fields import ArrayField
 
 from wrap.core.bases import BaseModel
 
@@ -30,6 +31,7 @@ class UserORM(BaseModel):
 
     pfp_url: fields.ReverseRelation["UserPFPORM"]
     therapist_data: fields.ReverseRelation["TherapistDataORM"]
+    therapist_info: fields.ReverseRelation["TherapistInfoORM"]
     events: fields.ReverseRelation["TherapistEventORM"]
 
     class Meta:
@@ -52,6 +54,7 @@ class TherapistDataORM(BaseModel):
     )
 
     events: fields.ReverseRelation["TherapistEventORM"]
+    notes: fields.ReverseRelation["TherapistNoteORM"]
 
     class Meta:
         table = "therapist_data"
@@ -67,11 +70,38 @@ class TherapistEventORM(BaseModel):
 
     title = fields.CharField(32)
     description = fields.CharField(1024)
-    iso_date = fields.CharField(10)
+    event_datetime = fields.DatetimeField()
     type = fields.IntEnumField(EventType, default=EventType.SESSION)
 
     class Meta:
         table = "therapist_events"
+
+
+class TherapistNoteORM(BaseModel):
+    therapist_data: fields.ForeignKeyRelation[TherapistDataORM] = fields.ForeignKeyField(
+        "models.TherapistDataORM", related_name="notes"
+    )
+    client: fields.ForeignKeyRelation[UserORM] = fields.ForeignKeyField(
+        "models.UserORM", related_name="notes", null=True
+    )
+    content = fields.CharField(1024)
+
+    class Meta:
+        table = "therapist_notes"
+
+
+class TherapistInfoORM(BaseModel):
+    therapist: fields.ForeignKeyRelation[UserORM] = fields.ForeignKeyField(
+        "models.UserORM", related_name="therapist_info"
+    )
+    price = fields.IntField()
+    about = fields.CharField(1024)
+    education = ArrayField("text")
+    theme_ids = ArrayField("int")
+    work_hours = ArrayField("timestamptz")
+
+    class Meta:
+        table = "therapist_info"
 
 
 class RefereedORM(BaseModel):
