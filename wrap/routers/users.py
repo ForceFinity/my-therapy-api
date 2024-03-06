@@ -35,7 +35,7 @@ async def get_by(
         query = query.offset(offset)
 
     if email:
-        query = query.filter(email=email)
+        return await query.get_or_none(email=email)
 
     if is_therapist is not None:
         query = query.filter(
