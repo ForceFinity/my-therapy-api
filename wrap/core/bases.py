@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, TypeVar, Generic
 
 from tortoise import Model, fields
 from pydantic import BaseModel as PydanticModel
@@ -15,11 +15,14 @@ class BaseModel(Model):
         abstract = True
 
 
-class BaseCRUD:
-    model: BaseModel
+CRUDModel = TypeVar('CRUDModel')
+
+
+class BaseCRUD(Generic[CRUDModel]):
+    model: CRUDModel = CRUDModel
 
     @classmethod
-    async def create_by(cls, payload: PydanticModel) -> "model":
+    async def create_by(cls, payload: PydanticModel) -> CRUDModel:
         instance = await cls.model.create(**payload.model_dump())
 
         logger.debug(f"New {str(instance)} id={instance.id} was created.")
@@ -27,19 +30,19 @@ class BaseCRUD:
         return instance
 
     @classmethod
-    async def get_by(cls, **kwargs) -> Union["model", None]:
+    async def get_by(cls, **kwargs) -> Union[CRUDModel, None]:
         logger.debug(f"Getting `{cls.model.__name__}` by {kwargs}")
 
         return await cls.model.get_or_none(**kwargs)
 
     @classmethod
-    async def get_all(cls) -> list["model"]:
+    async def get_all(cls) -> list[CRUDModel]:
         logger.debug(f"Getting all `{cls.model.__name__}` records")
 
         return await cls.model.all()
 
     @classmethod
-    async def filter_by(cls, **kwargs) -> list["model"]:
+    async def filter_by(cls, **kwargs) -> list[CRUDModel]:
         logger.debug(f"Filtering {cls.model.__name__} instances by {kwargs}")
         try:
             return await cls.model.filter(**kwargs)
@@ -49,7 +52,7 @@ class BaseCRUD:
             raise e
 
     @classmethod
-    async def update_by(cls, payload: PydanticModel | dict, **kwargs) -> "model":
+    async def update_by(cls, payload: PydanticModel | dict, **kwargs) -> CRUDModel:
         instance = await cls.get_by(**kwargs)
         as_dict = payload.items() if isinstance(payload, dict) else payload.model_dump().items()
 

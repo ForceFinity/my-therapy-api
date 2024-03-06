@@ -1,19 +1,43 @@
 import datetime
-from typing import ClassVar
+from typing import ClassVar, TypeAlias
 
-from fastapi import Form
-from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, Field, AliasChoices
 from tortoise.contrib.pydantic import pydantic_model_creator
 
-from wrap.applications.user.models import UserORM, RefereedORM
+from .models import UserORM, RefereedORM, UserType, TherapistEventORM, TherapistDataORM, TherapistNoteORM, \
+    TherapistInfoORM
 
 Refereed = pydantic_model_creator(RefereedORM)
+Event = pydantic_model_creator(TherapistEventORM)
+Note = pydantic_model_creator(TherapistNoteORM)
+TherapistInfoPayload = pydantic_model_creator(TherapistInfoORM, include=("about", "education", "price"))
+
+
+class TherapistInfo(pydantic_model_creator(TherapistInfoORM)):
+    therapist_id: int
+    work_hours: list[datetime.datetime]
+
+
+class TherapistInfoFull(TherapistInfo):
+    pfp: str
+    name: str
 
 
 class RefereedPayload(BaseModel):
     refereed_id: str
     user_id: str
+
+
+class Token(BaseModel):
+    access_token: str = Field(
+        validation_alias=AliasChoices("accessToken", "access_token")
+    )
+    token_type: str
+
+
+class TokenDecoded(BaseModel):
+    email: str | None
+    exp: int | None
 
 
 class User(pydantic_model_creator(UserORM)):
@@ -30,19 +54,8 @@ class User(pydantic_model_creator(UserORM)):
     password_hash: ClassVar[str]
 
 
-class Token(BaseModel):
-    access_token: str = Field(
-        validation_alias=AliasChoices("accessToken", "access_token")
-    )
-
-
 class UserResponse(User, Token):
     pass
-
-
-class TokenDecoded(BaseModel):
-    email: str | None
-    exp: int | None
 
 
 class EmailDecoded(BaseModel):
@@ -53,6 +66,7 @@ class EmailDecoded(BaseModel):
 class UserBase(BaseModel):
     nickname: str | None = None
     birth_date: datetime.date
+    account_type: UserType = UserType.CLIENT
     email: str
 
 
@@ -62,3 +76,15 @@ class UserSchema(UserBase):
 
 class UserPayload(UserBase):
     password: str
+
+
+class EventPayload(pydantic_model_creator(TherapistEventORM, name="EventPayload", exclude=("created_at", "id"))):
+    client_id: int
+
+
+class EventResponse(pydantic_model_creator(TherapistEventORM, name="EventResponse")):
+    client_id: int
+
+
+TherapistData = pydantic_model_creator(TherapistDataORM, exclude=("created_at", "id"))
+ISOString: TypeAlias = str
