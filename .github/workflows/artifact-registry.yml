@@ -9,7 +9,7 @@ on:
 env:
   PROJECT_ID: exemplary-torch-419810
   REGION: europe-west4
-  GAR_LOCATION: europe-west4-docker.pkg.dev/exemplary-torch-419810/api/
+  GAR_LOCATION: europe-west4-docker.pkg.dev/exemplary-torch-419810/api
 jobs:
   build-push-artifact:
     runs-on: ubuntu-latest
@@ -33,7 +33,7 @@ jobs:
           gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
           
       - name: Build image
-        run: docker build . --file Dockerfile
+        run: docker build . --file Dockerfile -t ${{ env.GAR_LOCATION }}
         working-directory: .
 
       - name: Push image
