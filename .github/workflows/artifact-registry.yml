@@ -9,7 +9,7 @@ on:
 env:
   PROJECT_ID: exemplary-torch-419810
   REGION: europe-west4
-  GAR_LOCATION: europe-west4-docker.pkg.dev/exemplary-torch-419810/api
+  GAR_LOCATION: europe-west4-docker.pkg.dev/exemplary-torch-419810/api/api
 jobs:
   build-push-artifact:
     runs-on: ubuntu-latest
