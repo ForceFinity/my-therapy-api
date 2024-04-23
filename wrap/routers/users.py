@@ -135,27 +135,26 @@ async def get_info_full(
 
 @router.post("/therapistInfo")
 async def create_info(
-        current_confirmed: CurrentConfirmed,
-        therapist_id: Annotated[int, Query()],
+        current_therapist: CurrentTherapist,
         price: Annotated[int, Form()],
         about: Annotated[str, Form()],
         education: Annotated[str, Form()],
         theme_ids: Annotated[str, Form()],
         work_hours: Annotated[str, Form()]
 ) -> TherapistInfo | None:
-    if await TherapistInfoCRUD.get_by(therapist_id=therapist_id):
+    if await TherapistInfoCRUD.get_by(therapist_id=current_therapist.id):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Already exists"
         )
 
     return await TherapistInfoCRUD.model.create(
-        therapist_id=therapist_id,
+        therapist_id=current_therapist.id,
         price=price,
         about=about,
         education=education.split(";;"),
         theme_ids=[int(el) for el in theme_ids.split(";")],
-        work_hours=work_hours.split(";")
+        work_hours=[datetime.datetime.fromisoformat(iso) for iso in work_hours.split(";")]
     )
 
 
@@ -163,9 +162,10 @@ async def create_info(
 async def update_work_hours(
     current_therapist: CurrentTherapist, work_hours: Annotated[str, Form()]
 ):
+
     return await TherapistInfoCRUD.update_by(
-        dict(
-            work_hours=[datetime.datetime.fromisoformat(iso) for iso in work_hours.split(";")]
-        ),
+        {
+            work_hours: [datetime.datetime.fromisoformat(iso) for iso in work_hours.split(";")]
+        },
         therapist_id=current_therapist.id
     )

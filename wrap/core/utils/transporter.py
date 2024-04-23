@@ -6,8 +6,8 @@ from email.headerregistry import Address
 from email.message import EmailMessage
 
 from wrap.applications.user import UserCRUD
-from wrap.core.utils import crypto
-from wrap.core.utils.crypto import email_hotp
+from wrap.core.utils import crypt
+from wrap.core.utils.crypt import email_hotp
 
 sender = os.environ["EMAIL_SENDER"]
 email_code = os.environ["EMAIL_CODE"]

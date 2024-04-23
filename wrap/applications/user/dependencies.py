@@ -5,16 +5,16 @@ from fastapi import Depends, HTTPException, status
 from .crud import UserCRUD
 from .schemas import User
 from .models import UserType
-from wrap.core.utils import crypto
+from wrap.core.utils import crypt
 
 
-async def get_current_user(token: Annotated[str, Depends(crypto.oauth2_scheme)]) -> User:
+async def get_current_user(token: Annotated[str, Depends(crypt.oauth2_scheme)]) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    if not (decoded := crypto.decode_auth_jwt(token)):
+    if not (decoded := crypt.decode_auth_jwt(token)):
         raise credentials_exception
 
     if not (user := await UserCRUD.get_by(email=decoded.email)):

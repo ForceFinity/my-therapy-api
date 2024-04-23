@@ -9,7 +9,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from wrap.applications.user import Token, UserCRUD, RefereedCRUD
 from wrap.applications.user.schemas import TokenDecoded, UserPayload, UserResponse, User, RefereedPayload
-from wrap.core.utils import crypto
+from wrap.core.utils import crypt
 
 router = APIRouter()
 
@@ -26,8 +26,8 @@ async def auth_for_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token_expires = timedelta(minutes=crypto.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = crypto.create_access_token(
+    access_token_expires = timedelta(minutes=crypt.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = crypt.create_jwt_token(
         data={"email": user.email}, expires_delta=access_token_expires
     )
 
@@ -35,14 +35,14 @@ async def auth_for_token(
 
 
 @router.get("/verify/", response_model=TokenDecoded)
-async def verify_token(token: Annotated[str, Depends(crypto.oauth2_scheme)]):
+async def verify_token(token: Annotated[str, Depends(crypt.oauth2_scheme)]):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
 
-    if not (decoded := crypto.decode_auth_jwt(token)):
+    if not (decoded := crypt.decode_auth_jwt(token)):
         raise credentials_exception
 
     if not await UserCRUD.get_by(email=decoded.email):
@@ -64,8 +64,8 @@ async def sign_up(
             detail="User already exists"
         )
 
-    access_token_expires = timedelta(minutes=crypto.ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = crypto.create_access_token(
+    access_token_expires = timedelta(minutes=crypt.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = crypt.create_jwt_token(
         data={"email": form_data.username}, expires_delta=access_token_expires
     )
 
@@ -83,7 +83,8 @@ async def sign_up(
 
     resp = UserResponse(
         **(await User.from_tortoise_orm(user)).model_dump(),
-        access_token=access_token
+        access_token=access_token,
+        token_type="Bearer"
     )
 
     return resp.copy(exclude={"password_hash"})

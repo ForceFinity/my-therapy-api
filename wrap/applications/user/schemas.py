@@ -1,5 +1,5 @@
 import datetime
-from typing import ClassVar, TypeAlias
+from typing import ClassVar
 
 from pydantic import BaseModel, Field, AliasChoices
 from tortoise.contrib.pydantic import pydantic_model_creator
@@ -87,4 +87,3 @@ class EventResponse(pydantic_model_creator(TherapistEventORM, name="EventRespons
 
 
 TherapistData = pydantic_model_creator(TherapistDataORM, exclude=("created_at", "id"))
-ISOString: TypeAlias = str

@@ -1,5 +1,7 @@
-from typing import Union, TypeVar, Generic
+import datetime
+from typing import Union, TypeVar, Generic, TypeAlias
 
+import tortoise.exceptions
 from tortoise import Model, fields
 from pydantic import BaseModel as PydanticModel
 from tortoise.exceptions import DoesNotExist
@@ -15,7 +17,7 @@ class BaseModel(Model):
         abstract = True
 
 
-CRUDModel = TypeVar('CRUDModel')
+CRUDModel = TypeVar('CRUDModel', bound=Model)
 
 
 class BaseCRUD(Generic[CRUDModel]):
@@ -30,7 +32,7 @@ class BaseCRUD(Generic[CRUDModel]):
         return instance
 
     @classmethod
-    async def get_by(cls, **kwargs) -> Union[CRUDModel, None]:
+    async def get_by(cls, **kwargs) -> CRUDModel | None:
         logger.debug(f"Getting `{cls.model.__name__}` by {kwargs}")
 
         return await cls.model.get_or_none(**kwargs)
@@ -42,18 +44,22 @@ class BaseCRUD(Generic[CRUDModel]):
         return await cls.model.all()
 
     @classmethod
-    async def filter_by(cls, **kwargs) -> list[CRUDModel]:
+    async def filter_by(cls, **kwargs) -> list[CRUDModel] | None:
         logger.debug(f"Filtering {cls.model.__name__} instances by {kwargs}")
         try:
             return await cls.model.filter(**kwargs)
 
         except DoesNotExist as e:
             logger.error(e)
-            raise e
+            return None
 
     @classmethod
     async def update_by(cls, payload: PydanticModel | dict, **kwargs) -> CRUDModel:
         instance = await cls.get_by(**kwargs)
+
+        if not instance:
+            raise tortoise.exceptions.DoesNotExist
+
         as_dict = payload.items() if isinstance(payload, dict) else payload.model_dump().items()
 
         await instance.update_from_dict(
@@ -73,3 +79,6 @@ class BaseCRUD(Generic[CRUDModel]):
         logger.debug(f"Deleting {str(instance)} id={instance.id}")
 
         await instance.delete()
+
+
+ISOString: TypeAlias = str  # Example: 2024-03-04T16:00:00+00:00
