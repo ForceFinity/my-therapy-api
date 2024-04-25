@@ -4,7 +4,7 @@ pydantic-settings
 pyotp
 tortoise-orm[asyncpg]
 fastapi
-uvicorn[standart]
+uvicorn[standard]
 cloud-sql-python-connector[asyncpg]
 loguru
 google-api-python-client
@@ -14,3 +14,5 @@ python-jose
 python-multipart
 aiosmtplib
 aerich
+base58
+gunicorn
