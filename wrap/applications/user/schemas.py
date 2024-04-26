@@ -67,6 +67,7 @@ class UserBase(BaseModel):
     nickname: str | None = None
     birth_date: datetime.date
     account_type: UserType = UserType.CLIENT
+    is_confirmed: bool = False
     email: str
 
 

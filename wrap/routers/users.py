@@ -74,9 +74,16 @@ async def get_events(
     return await TherapistDataCRUD.get_events(current_therapist.id)
 
 
+@router.get("/therapistData/clientEvents", response_model=list[EventResponse])
+async def get_client_events(
+        current_confirmed: CurrentConfirmed,
+):
+    return await TherapistEventORM.filter(client_id=current_confirmed.id).order_by("event_datetime")
+
+
 @router.post("/therapistData/events", description="event_datetime field must be specified in ISO standard")
 async def add_event(
-        current_therapist: CurrentConfirmed,
+        current_confirmed: CurrentConfirmed,
         therapist_id: Annotated[int, Query()],
         client_id: Annotated[int, Form()],
         title: Annotated[str, Form()],

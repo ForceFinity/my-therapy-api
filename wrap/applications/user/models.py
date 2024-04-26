@@ -6,6 +6,9 @@ from tortoise.contrib.postgres.fields import ArrayField
 
 from wrap.core.bases import BaseModel
 
+if TYPE_CHECKING:
+    from wrap.applications.call.models import CallORM
+
 
 class UserType(IntEnum):
     CLIENT = 1

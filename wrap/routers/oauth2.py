@@ -56,7 +56,8 @@ async def sign_up(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
         nickname: Annotated[str, Form()],
         birth_date: Annotated[str, Form()],
-        by_user_id: str = ""
+        by_user_id: str = "",
+        is_by_google: bool = False
 ):
     if await UserCRUD.get_by(email=form_data.username):
         raise HTTPException(
@@ -74,7 +75,8 @@ async def sign_up(
             nickname=nickname,
             birth_date=datetime.fromisoformat(birth_date).date(),
             email=form_data.username,
-            password=form_data.password
+            password=form_data.password,
+            is_confirmed=is_by_google
         )
     )
 

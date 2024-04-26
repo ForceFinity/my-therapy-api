@@ -1,11 +1,9 @@
 import base58
-from pydantic import BaseModel as PydanticModel
 
 from .schemas import CallPayload
 from wrap.applications.call.models import CallORM
 from wrap.core import logger
-from wrap.core.bases import BaseCRUD, CRUDModel
-from wrap.core.utils import crypt
+from wrap.core.bases import BaseCRUD
 
 
 class CallCRUD(BaseCRUD[CallORM]):

@@ -9,5 +9,6 @@ Call = pydantic_model_creator(CallORM)
 
 class CallPayload(BaseModel):
     therapist_id: int
+    event_id: int
     participants: list[int]
     datetime: ISOString

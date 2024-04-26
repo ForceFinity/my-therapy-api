@@ -30,12 +30,14 @@ async def get_calls(therapist_id=Query(None), client_id=Query(None)) -> list[Cal
 async def plan_call(
     current_confirmed: CurrentConfirmed,
     therapist_id: Annotated[int, Form()],
+    event_id: Annotated[int, Form()],
     participants: Annotated[str, Form()],
     datetime: Annotated[str, Form()]
 ) -> Call:
     return await CallCRUD.create_by(
         CallPayload(
             therapist_id=therapist_id,
+            event_id=event_id,
             participants=participants.split(";"),
             datetime=datetime
         )
