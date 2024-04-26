@@ -1,5 +1,5 @@
 from wrap.core.bases import BaseCRUD
-from wrap.core.utils import crypto
+from wrap.core.utils import crypt
 from .models import UserORM, RefereedORM, UserPFPORM, TherapistDataORM, TherapistEventORM, TherapistNoteORM, \
     TherapistInfoORM, EventType
 from .schemas import UserPayload, UserSchema, EventPayload
@@ -10,7 +10,7 @@ class UserCRUD(BaseCRUD[UserORM]):
 
     @classmethod
     async def create_by(cls, payload: UserPayload):
-        password_hash = crypto.get_password_hash(payload.password)
+        password_hash = crypt.get_bcrypt_hash(payload.password)
 
         hashed_payload = UserSchema(
             **payload.copy(exclude={"password"}).model_dump(),
@@ -26,7 +26,7 @@ class UserCRUD(BaseCRUD[UserORM]):
         if not user:
             return False
 
-        if not crypto.verify_password(password, user.password_hash):
+        if not crypt.verify_secret(password, user.password_hash):
             return False
 
         return user

@@ -1,5 +1,5 @@
 import datetime
-from typing import ClassVar, TypeAlias
+from typing import ClassVar
 
 from pydantic import BaseModel, Field, AliasChoices
 from tortoise.contrib.pydantic import pydantic_model_creator
@@ -67,6 +67,7 @@ class UserBase(BaseModel):
     nickname: str | None = None
     birth_date: datetime.date
     account_type: UserType = UserType.CLIENT
+    is_confirmed: bool = False
     email: str
 
 
@@ -87,4 +88,3 @@ class EventResponse(pydantic_model_creator(TherapistEventORM, name="EventRespons
 
 
 TherapistData = pydantic_model_creator(TherapistDataORM, exclude=("created_at", "id"))
-ISOString: TypeAlias = str

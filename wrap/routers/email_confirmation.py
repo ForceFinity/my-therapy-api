@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException, status
 from wrap.applications.user import User, UserCRUD
 from wrap.applications.user.dependencies import CurrentUser
 from wrap.core.utils import transporter
-from wrap.core.utils.crypto import email_hotp
+from wrap.core.utils.crypt import email_hotp
 
 router = APIRouter()
 
