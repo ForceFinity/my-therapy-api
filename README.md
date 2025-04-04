@@ -12,4 +12,5 @@ The project follows a clean separation of concerns with two main layers
 - `routers/` – lightweight API endpoints that delegate to the feature layer
 This design ensures maintainability while allowing for easy future expansion into a microservice architecture, if needed.
 
-Stack: FastAPI, TortoiseORM, bcrypt, Pydantic, Google Cloud Platform.
+## Stack
+FastAPI, TortoiseORM, bcrypt, Pydantic, Google Cloud Platform.
